@@ -77,13 +77,15 @@ void simd() {
 
 void cache() {
     //cache friendly
-    int size = 1 << 20;
-    std::vector<int> a(size, 1);
-    std::vector<int> b(size*16, 1);
+    int size = 10000;
+    std::vector<std::vector<int>> a(size, std::vector<int>(size, 1));
+
     volatile long long sum = 0;
     auto friendStart = std::chrono::high_resolution_clock::now();
     for(unsigned int i = 0; i < size; i++){
-        sum += a[i];
+        for(unsigned int j = 0; j < size; j++){
+            sum += a[i][j];
+        }
     }
     auto friendEnd = std::chrono::high_resolution_clock::now();
     
@@ -91,8 +93,11 @@ void cache() {
 
     auto unfriendStart = std::chrono::high_resolution_clock::now();
     sum = 0;
-    for(unsigned int i = 0; i < size; i+=16){
-        sum += b[i];
+    for(unsigned int i = 0; i < size; i++){
+        for(unsigned int j = 0; j < size; j++){
+            sum += a[j][i];
+        }
+        
     }
     auto unfriendEnd = std::chrono::high_resolution_clock::now();
     auto unfriendTime = std::chrono::duration<double, std::milli>(unfriendEnd-unfriendStart).count();
