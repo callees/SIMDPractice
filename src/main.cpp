@@ -4,6 +4,7 @@
 #include <memory>
 #include <immintrin.h> // For AVX2 intrinsics
 #include <thread>
+#include <random>
 
 void scalar_add(const float* a, const float* b, float* result, size_t n) {
     for (size_t i = 0; i < n; ++i) {
@@ -106,6 +107,40 @@ void cache() {
     auto unfriendTime = std::chrono::duration<double, std::milli>(unfriendEnd-unfriendStart).count();
 
     std::cout << "Cache friendly time: " << friendlyTime
+              << "\nCache unfriendly time: " << unfriendTime
+              << "\n";
+}
+
+void branchprediction(){
+    size_t N = 1 << 20;
+    std::vector<int> v(N);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrib(0, 100);
+
+
+    for (size_t i = 0; i < N; ++i) {
+        v[i] = distrib(gen);
+    }
+
+    long long sum = 0;
+    auto friendStart = std::chrono::high_resolution_clock::now();
+    for(size_t i = 0; i < N; i++){
+        sum += v[i];
+    }
+    auto friendEnd = std::chrono::high_resolution_clock::now();
+    auto friendlyTime = std::chrono::duration<double, std::milli>(friendEnd-friendStart).count();
+
+    std::sort(v.begin(), v.end());
+    sum = 0;
+    auto unfriendStart = std::chrono::high_resolution_clock::now();
+    for(size_t i = 0; i < N; i++){
+        sum += v[i];
+    }
+    auto unfriendEnd = std::chrono::high_resolution_clock::now();
+    auto unfriendTime = std::chrono::duration<double, std::milli>(unfriendEnd-unfriendStart).count();
+
+        std::cout << "Cache friendly time: " << friendlyTime
               << "\nCache unfriendly time: " << unfriendTime
               << "\n";
 }
